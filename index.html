@@ -246,6 +246,17 @@
             margin: 5px;
         }
 
+        .auto-detect {
+            background: #e8f5e8;
+            border: 1px solid #4CAF50;
+            color: #2e7d32;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -278,7 +289,7 @@
     <div class="container">
         <div class="header">
             <h1>🛒 Ma Liste de Courses</h1>
-            <p>Demo publique - Organisez vos achats par rayon</p>
+            <p>Demo avec détection automatique des rayons</p>
         </div>
 
         <div class="form-section">
@@ -293,16 +304,16 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="itemName">Nom de l'article *</label>
-                        <input type="text" id="itemName" required placeholder="Ex: Pommes">
+                        <input type="text" id="itemName" required placeholder="Ex: Pommes" oninput="detectRayon()">
                     </div>
                     <div class="form-group">
                         <label for="itemQuantity">Quantité</label>
                         <input type="text" id="itemQuantity" placeholder="Ex: 2kg, 1 paquet">
                     </div>
                     <div class="form-group">
-                        <label for="itemRayon">Rayon *</label>
-                        <select id="itemRayon" required>
-                            <option value="">Choisir un rayon</option>
+                        <label for="itemRayon">Rayon (auto-détecté)</label>
+                        <select id="itemRayon">
+                            <option value="">Détection automatique</option>
                             <option value="Fruits et Légumes">Fruits et Légumes</option>
                             <option value="Boucherie">Boucherie</option>
                             <option value="Poissonnerie">Poissonnerie</option>
@@ -314,6 +325,7 @@
                             <option value="Entretien">Entretien</option>
                             <option value="Autre">Autre</option>
                         </select>
+                        <div id="autoDetect" class="auto-detect"></div>
                     </div>
                 </div>
                 
@@ -349,6 +361,102 @@
 
     <script>
         let shoppingItems = JSON.parse(localStorage.getItem('shoppingList')) || [];
+
+        // Base de données pour la détection automatique des rayons
+        const rayonDatabase = {
+            "Fruits et Légumes": [
+                "pomme", "pommes", "poire", "poires", "banane", "bananes", "orange", "oranges", "citron", "citrons",
+                "tomate", "tomates", "carotte", "carottes", "courgette", "courgettes", "aubergine", "aubergines",
+                "salade", "laitue", "épinard", "épinards", "brocoli", "brocolis", "chou", "choux", "poivron", "poivrons",
+                "concombre", "concombres", "radis", "oignon", "oignons", "ail", "persil", "basilic", "thym",
+                "fraise", "fraises", "cerise", "cerises", "raisin", "raisins", "melon", "pastèque", "ananas",
+                "kiwi", "kiwis", "mangue", "mangues", "avocat", "avocats", "champignon", "champignons"
+            ],
+            "Boucherie": [
+                "viande", "bœuf", "porc", "agneau", "veau", "steak", "steaks", "côte", "côtes", "rôti", "escalope", "escalopes",
+                "saucisse", "saucisses", "merguez", "chipolata", "chipolatas", "jambon", "lardons", "bacon",
+                "hachés", "haché", "émincé", "émincés", "blanquette", "bourguignon", "entrecôte", "filet"
+            ],
+            "Poissonnerie": [
+                "poisson", "saumon", "thon", "cabillaud", "sole", "dorade", "bar", "loup", "truite", "maquereau",
+                "sardine", "sardines", "anchois", "crevette", "crevettes", "moule", "moules", "huître", "huîtres",
+                "crabe", "homard", "langoustine", "langoustines", "calamar", "calamars", "seiche"
+            ],
+            "Crémerie": [
+                "lait", "yaourt", "yaourts", "fromage", "fromages", "beurre", "crème", "emmental", "gruyère",
+                "camembert", "roquefort", "chèvre", "mozzarella", "parmesan", "ricotta", "mascarpone",
+                "œuf", "œufs", "feta", "comté", "brie", "munster", "reblochon"
+            ],
+            "Épicerie": [
+                "pâtes", "riz", "farine", "sucre", "sel", "poivre", "huile", "vinaigre", "moutarde", "ketchup",
+                "mayonnaise", "conserve", "conserves", "sauce", "sauces", "épice", "épices", "thé", "café",
+                "chocolat", "biscuit", "biscuits", "céréale", "céréales", "confiture", "miel", "pâte",
+                "quinoa", "boulgour", "lentille", "lentilles", "haricot", "haricots", "pois", "chickpeas"
+            ],
+            "Surgelés": [
+                "surgelé", "surgelés", "glace", "glaces", "sorbet", "sorbets", "pizza", "pizzas", "frite", "frites",
+                "légume surgelé", "légumes surgelés", "poisson pané", "nuggets", "cordon bleu"
+            ],
+            "Boissons": [
+                "eau", "jus", "soda", "coca", "pepsi", "sprite", "fanta", "bière", "bières", "vin", "vins",
+                "champagne", "whisky", "vodka", "rhum", "sirop", "sirops", "limonade", "thé glacé"
+            ],
+            "Hygiène": [
+                "dentifrice", "brosse à dents", "shampoing", "gel douche", "savon", "déodorant", "parfum",
+                "crème", "lotion", "maquillage", "rouge à lèvres", "mascara", "fond de teint", "rasoir",
+                "mousse à raser", "après-rasage", "coton", "coton-tige", "serviette hygiénique"
+            ],
+            "Entretien": [
+                "lessive", "adoucissant", "liquide vaisselle", "éponge", "éponges", "produit ménager",
+                "javel", "détergent", "nettoyant", "aspirateur", "sac poubelle", "sacs poubelle",
+                "papier toilette", "essuie-tout", "lingette", "lingettes"
+            ]
+        };
+
+        function detectRayon() {
+            const itemName = document.getElementById('itemName').value.toLowerCase().trim();
+            const rayonSelect = document.getElementById('itemRayon');
+            const autoDetectDiv = document.getElementById('autoDetect');
+            
+            if (itemName.length < 2) {
+                autoDetectDiv.style.display = 'none';
+                return;
+            }
+
+            let detectedRayon = null;
+            
+            // Recherche dans la base de données
+            for (const [rayon, keywords] of Object.entries(rayonDatabase)) {
+                for (const keyword of keywords) {
+                    if (itemName.includes(keyword)) {
+                        detectedRayon = rayon;
+                        break;
+                    }
+                }
+                if (detectedRayon) break;
+            }
+
+            if (detectedRayon) {
+                autoDetectDiv.innerHTML = `🤖 Rayon détecté: ${detectedRayon}`;
+                autoDetectDiv.style.display = 'block';
+                // Ne pas changer automatiquement la sélection pour laisser le choix à l'utilisateur
+            } else {
+                autoDetectDiv.style.display = 'none';
+            }
+        }
+
+        function getDetectedRayon(itemName) {
+            const name = itemName.toLowerCase().trim();
+            
+            for (const [rayon, keywords] of Object.entries(rayonDatabase)) {
+                for (const keyword of keywords) {
+                    if (name.includes(keyword)) {
+                        return rayon;
+                    }
+                }
+            }
+            return "Autre"; // Rayon par défaut si aucune détection
+        }
 
         function saveToLocalStorage() {
             localStorage.setItem('shoppingList', JSON.stringify(shoppingItems));
@@ -435,13 +543,18 @@
             
             const name = document.getElementById('itemName').value.trim();
             const quantity = document.getElementById('itemQuantity').value.trim();
-            const rayon = document.getElementById('itemRayon').value;
+            let rayon = document.getElementById('itemRayon').value;
             const note = document.getElementById('itemNote').value.trim();
             const photoFile = document.getElementById('itemPhoto').files[0];
             
-            if (!name || !rayon) {
-                alert('Veuillez remplir au moins le nom et le rayon');
+            if (!name) {
+                alert('Veuillez remplir au moins le nom de l\'article');
                 return;
+            }
+
+            // Si aucun rayon n'est sélectionné, utiliser la détection automatique
+            if (!rayon) {
+                rayon = getDetectedRayon(name);
             }
 
             const item = {
@@ -462,6 +575,7 @@
                     saveToLocalStorage();
                     renderList();
                     document.getElementById('itemForm').reset();
+                    document.getElementById('autoDetect').style.display = 'none';
                 };
                 reader.readAsDataURL(photoFile);
             } else {
@@ -469,6 +583,7 @@
                 saveToLocalStorage();
                 renderList();
                 document.getElementById('itemForm').reset();
+                document.getElementById('autoDetect').style.display = 'none';
             }
         }
 
