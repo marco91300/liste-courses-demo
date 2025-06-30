@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Liste de Courses - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .form-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .photo-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .photo-upload:hover {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+        }
+
+        .photo-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .shopping-list {
+            padding: 30px;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .rayon-group {
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .rayon-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+
+        .item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .item-quantity {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .item-photo {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-left: 15px;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #ff3742;
+        }
+
+        .completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            color: #666;
+        }
+
+        .demo-data {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .demo-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .list-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .list-header button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Ma Liste de Courses</h1>
+            <p>Demo publique - Organisez vos achats par rayon</p>
+        </div>
+
+        <div class="form-section">
+            <div class="demo-data">
+                <strong>🧪 Mode Demo</strong><br>
+                <button class="demo-btn" onclick="loadDemoData()">Charger des données d'exemple</button>
+                <button class="demo-btn" onclick="clearAllData()">Vider la liste</button>
+            </div>
+
+            <h2 style="margin-bottom: 20px; color: #333;">Ajouter un article</h2>
+            <form id="itemForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="itemName">Nom de l'article *</label>
+                        <input type="text" id="itemName" required placeholder="Ex: Pommes">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemQuantity">Quantité</label>
+                        <input type="text" id="itemQuantity" placeholder="Ex: 2kg, 1 paquet">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemRayon">Rayon *</label>
+                        <select id="itemRayon" required>
+                            <option value="">Choisir un rayon</option>
+                            <option value="Fruits et Légumes">Fruits et Légumes</option>
+                            <option value="Boucherie">Boucherie</option>
+                            <option value="Poissonnerie">Poissonnerie</option>
+                            <option value="Crémerie">Crémerie</option>
+                            <option value="Épicerie">Épicerie</option>
+                            <option value="Surgelés">Surgelés</option>
+                            <option value="Boissons">Boissons</option>
+                            <option value="Hygiène">Hygiène</option>
+                            <option value="Entretien">Entretien</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="itemNote">Note supplémentaire</label>
+                    <textarea id="itemNote" rows="3" placeholder="Marque préférée, détails spéciaux..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Photo (optionnel)</label>
+                    <div class="photo-upload">
+                        <input type="file" id="itemPhoto" accept="image/*">
+                        <div>📷 Cliquez pour ajouter une photo</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">➕ Ajouter à la liste</button>
+            </form>
+        </div>
+
+        <div class="shopping-list">
+            <div class="list-header">
+                <h2>Ma Liste</h2>
+                <button onclick="clearCompleted()" class="btn" style="width: auto; background: #ff4757;">🗑️ Supprimer cochés</button>
+            </div>
+            <div id="shoppingList"></div>
+        </div>
+
+        <div class="stats">
+            <div id="stats">0 articles dans votre liste</div>
+        </div>
+    </div>
+
+    <script>
+        let shoppingItems = JSON.parse(localStorage.getItem('shoppingList')) || [];
+
+        function saveToLocalStorage() {
+            localStorage.setItem('shoppingList', JSON.stringify(shoppingItems));
+        }
+
+        function loadDemoData() {
+            shoppingItems = [
+                {
+                    id: 1,
+                    name: "Pommes Golden",
+                    quantity: "2kg",
+                    rayon: "Fruits et Légumes",
+                    note: "Bio de préférence",
+                    photo: null,
+                    completed: false
+                },
+                {
+                    id: 2,
+                    name: "Steaks hachés",
+                    quantity: "4 pièces",
+                    rayon: "Boucherie",
+                    note: "5% de matière grasse",
+                    photo: null,
+                    completed: false
+                },
+                {
+                    id: 3,
+                    name: "Lait demi-écrémé",
+                    quantity: "2 bouteilles",
+                    rayon: "Crémerie",
+                    note: "Marque Lactel",
+                    photo: null,
+                    completed: true
+                },
+                {
+                    id: 4,
+                    name: "Pâtes",
+                    quantity: "1 paquet",
+                    rayon: "Épicerie",
+                    note: "Barilla ou équivalent",
+                    photo: null,
+                    completed: false
+                },
+                {
+                    id: 5,
+                    name: "Dentifrice",
+                    quantity: "1 tube",
+                    rayon: "Hygiène",
+                    note: "Signal ou Colgate",
+                    photo: null,
+                    completed: false
+                },
+                {
+                    id: 6,
+                    name: "Saumon frais",
+                    quantity: "2 pavés",
+                    rayon: "Poissonnerie",
+                    note: "Label Rouge si possible",
+                    photo: null,
+                    completed: false
+                },
+                {
+                    id: 7,
+                    name: "Yaourts nature",
+                    quantity: "8 pots",
+                    rayon: "Crémerie",
+                    note: "Marque Danone",
+                    photo: null,
+                    completed: false
+                }
+            ];
+            saveToLocalStorage();
+            renderList();
+        }
+
+        function clearAllData() {
+            shoppingItems = [];
+            saveToLocalStorage();
+            renderList();
+        }
+
+        function addItem(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('itemName').value.trim();
+            const quantity = document.getElementById('itemQuantity').value.trim();
+            const rayon = document.getElementById('itemRayon').value;
+            const note = document.getElementById('itemNote').value.trim();
+            const photoFile = document.getElementById('itemPhoto').files[0];
+            
+            if (!name || !rayon) {
+                alert('Veuillez remplir au moins le nom et le rayon');
+                return;
+            }
+
+            const item = {
+                id: Date.now(),
+                name: name,
+                quantity: quantity,
+                rayon: rayon,
+                note: note,
+                photo: null,
+                completed: false
+            };
+
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    item.photo = e.target.result;
+                    shoppingItems.push(item);
+                    saveToLocalStorage();
+                    renderList();
+                    document.getElementById('itemForm').reset();
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                shoppingItems.push(item);
+                saveToLocalStorage();
+                renderList();
+                document.getElementById('itemForm').reset();
+            }
+        }
+
+        function toggleItem(id) {
+            const item = shoppingItems.find(item => item.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                saveToLocalStorage();
+                renderList();
+            }
+        }
+
+        function deleteItem(id) {
+            shoppingItems = shoppingItems.filter(item => item.id !== id);
+            saveToLocalStorage();
+            renderList();
+        }
+
+        function clearCompleted() {
+            shoppingItems = shoppingItems.filter(item => !item.completed);
+            saveToLocalStorage();
+            renderList();
+        }
+
+        function renderList() {
+            const listContainer = document.getElementById('shoppingList');
+            const groupedItems = {};
+
+            // Grouper par rayon
+            shoppingItems.forEach(item => {
+                if (!groupedItems[item.rayon]) {
+                    groupedItems[item.rayon] = [];
+                }
+                groupedItems[item.rayon].push(item);
+            });
+
+            let html = '';
+            
+            Object.keys(groupedItems).sort().forEach(rayon => {
+                html += `
+                    <div class="rayon-group">
+                        <div class="rayon-header">${rayon}</div>
+                `;
+                
+                groupedItems[rayon].forEach(item => {
+                    html += `
+                        <div class="item ${item.completed ? 'completed' : ''}">
+                            <input type="checkbox" class="item-checkbox" 
+                                   ${item.completed ? 'checked' : ''} 
+                                   onchange="toggleItem(${item.id})">
+                            <div class="item-content">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-details">
+                                    ${item.quantity ? `<span class="item-quantity">${item.quantity}</span>` : ''}
+                                    ${item.note ? item.note : ''}
+                                </div>
+                            </div>
+                            ${item.photo ? `<img src="${item.photo}" alt="Photo ${item.name}" class="item-photo">` : ''}
+                            <button class="delete-btn" onclick="deleteItem(${item.id})">🗑️</button>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+
+            if (shoppingItems.length === 0) {
+                html = '<div style="text-align: center; padding: 40px; color: #666;">Votre liste est vide. Ajoutez votre premier article ou chargez les données d\'exemple ! 🛒</div>';
+            }
+
+            listContainer.innerHTML = html;
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = shoppingItems.length;
+            const completed = shoppingItems.filter(item => item.completed).length;
+            const remaining = total - completed;
+            
+            document.getElementById('stats').innerHTML = 
+                `${total} articles au total • ${remaining} restants • ${completed} cochés`;
+        }
+
+        // Event listeners
+        document.getElementById('itemForm').addEventListener('submit', addItem);
+
+        // Charger la liste au démarrage
+        renderList();
+    </script>
+</body>
+</html>
